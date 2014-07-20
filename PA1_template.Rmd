@@ -174,7 +174,7 @@ avg5Interval <- data1[, list(mSteps = mean(steps, na.rm=TRUE)), interval]
 Plot a time series of the 5-minute interval and the average number of steps taken across all days.
 
 ```{r timeseries5MinInterval}
-ggplot(avg5Interval, aes(x=interval, y=meanSteps)) +
+ggplot(avg5Interval, aes(x=interval, y=mSteps)) +
 	geom_line()
 ```
 

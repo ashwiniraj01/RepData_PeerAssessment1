@@ -210,7 +210,7 @@ print(xtable(meanMedian), type = "html", include.rownames = FALSE)
 ```
 
 <!-- html table generated in R 3.0.3 by xtable 1.7-3 package -->
-<!-- Sun Jul 20 18:38:17 2014 -->
+<!-- Sun Jul 20 19:01:45 2014 -->
 <TABLE border=1>
 <TR> <TH> n </TH> <TH> nValid </TH> <TH> mean </TH> <TH> median </TH>  </TR>
   <TR> <TD align="right">  61 </TD> <TD align="right">  53 </TD> <TD align="right"> 10766.19 </TD> <TD align="right"> 10765 </TD> </TR>
@@ -244,12 +244,10 @@ Plot a time series of the 5-minute interval and the average number of steps take
 
 
 ```r
-ggplot(avg5Interval, aes(x = interval, y = meanSteps)) + geom_line()
+ggplot(avg5Interval, aes(x = interval, y = mSteps)) + geom_line()
 ```
 
-```
-## Error: object 'meanSteps' not found
-```
+![plot of chunk timeseries5MinInterval](figure/timeseries5MinInterval.png) 
 
 
 
@@ -277,7 +275,7 @@ print(xtable(nMissingSteps), type = "html", include.rownames = FALSE)
 ```
 
 <!-- html table generated in R 3.0.3 by xtable 1.7-3 package -->
-<!-- Sun Jul 20 18:38:17 2014 -->
+<!-- Sun Jul 20 19:01:45 2014 -->
 <TABLE border=1>
 <TR> <TH> stepsMissing </TH> <TH> N </TH>  </TR>
   <TR> <TD> TRUE </TD> <TD align="right"> 2304 </TD> </TR>
@@ -292,7 +290,7 @@ print(xtable(x1), type = "html", include.rownames = FALSE)
 ```
 
 <!-- html table generated in R 3.0.3 by xtable 1.7-3 package -->
-<!-- Sun Jul 20 18:38:17 2014 -->
+<!-- Sun Jul 20 19:01:46 2014 -->
 <TABLE border=1>
 <TR> <TH> isMissing </TH> <TH> N </TH>  </TR>
   <TR> <TD> TRUE </TD> <TD align="right"> 2304 </TD> </TR>
