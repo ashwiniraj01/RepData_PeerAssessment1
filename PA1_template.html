@@ -1,0 +1,315 @@
+
+Reproducible Research - Peer Assessment 1
+=========================================
+
+## Introduction
+
+It is now possible to collect a large amount of data about personal
+movement using activity monitoring devices such as a
+[Fitbit](http://www.fitbit.com), [Nike
+Fuelband](http://www.nike.com/us/en_us/c/nikeplus-fuelband), or
+[Jawbone Up](https://jawbone.com/up). These type of devices are part of
+the "quantified self" movement -- a group of enthusiasts who take
+measurements about themselves regularly to improve their health, to
+find patterns in their behavior, or because they are tech geeks. But
+these data remain under-utilized both because the raw data are hard to
+obtain and there is a lack of statistical methods and software for
+processing and interpreting the data.
+
+This assignment makes use of data from a personal activity monitoring
+device. This device collects data at 5 minute intervals through out the
+day. The data consists of two months of data from an anonymous
+individual collected during the months of October and November, 2012
+and include the number of steps taken in 5 minute intervals each day.
+
+## Data
+
+The data for this assignment can be downloaded from the course web
+site:
+
+* Dataset: [Activity monitoring data](https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip) [52K]
+
+The variables included in this dataset are:
+
+* **steps**: Number of steps taking in a 5-minute interval (missing
+    values are coded as `NA`)
+
+* **date**: The date on which the measurement was taken in YYYY-MM-DD
+    format
+
+* **interval**: Identifier for the 5-minute interval in which
+    measurement was taken
+
+
+
+
+The dataset is stored in a comma-separated-value (CSV) file and there
+are a total of 17,568 observations in this
+dataset.
+
+
+## Assignment
+
+This assignment will be described in multiple parts. You will need to
+write a report that answers the questions detailed below. Ultimately,
+you will need to complete the entire assignment in a **single R
+markdown** document that can be processed by **knitr** and be
+transformed into an HTML file.
+
+Throughout your report make sure you always include the code that you
+used to generate the output you present. When writing code chunks in
+the R markdown document, always use `echo = TRUE` so that someone else
+will be able to read the code. **This assignment will be evaluated via
+peer assessment so it is essential that your peer evaluators be able
+to review the code for your analysis**.
+
+For the plotting aspects of this assignment, feel free to use any
+plotting system in R (i.e., base, lattice, ggplot2)
+
+Fork/clone the [GitHub repository created for this
+assignment](http://github.com/rdpeng/RepData_PeerAssessment1). You
+will submit this assignment by pushing your completed files into your
+forked repository on GitHub. The assignment submission will consist of
+the URL to your GitHub repository and the SHA-1 commit ID for your
+repository state.
+
+NOTE: The GitHub repository also contains the dataset for the
+assignment so you do not have to download the data separately.
+
+
+
+
+Loading required packeges for processing.
+
+
+```r
+rpack <- c("data.table", "ggplot2", "xtable", "VIM")
+sapply(rpack, require, character.only = TRUE, quietly = TRUE)
+```
+
+```
+## data.table    ggplot2     xtable        VIM 
+##       TRUE       TRUE       TRUE       TRUE
+```
+
+
+
+### Loading and preprocessing the data
+
+Show any code that is needed to
+
+1. Load the data (i.e. `read.csv()`)
+
+2. Process/transform the data (if necessary) into a format suitable for your analysis
+
+The directory contains the unzipped file.
+
+Read CSV file.
+
+
+```r
+data1 <- read.csv(file.path(getwd(), "activity.csv"))
+data1 <- data.table(data1)
+```
+
+ 
+Verify that the number of rows in the dataset is the expected value of 17,568.
+
+
+```r
+num_rows <- nrow(dt) == 17568
+if (num_rows == FALSE) stop("Error : The number of rows != 17,568")
+```
+
+
+Convert `date` variable to DATE class.
+
+
+```r
+data1 <- data1[, `:=`(date, as.Date(date))]
+setkey(data1, date, interval)
+str(data1)
+```
+
+```
+## Classes 'data.table' and 'data.frame':	17568 obs. of  3 variables:
+##  $ steps   : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ date    : Date, format: "2012-10-01" "2012-10-01" ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+##  - attr(*, ".internal.selfref")=<externalptr> 
+##  - attr(*, "sorted")= chr  "date" "interval"
+```
+
+```r
+data1
+```
+
+```
+##        steps       date interval
+##     1:    NA 2012-10-01        0
+##     2:    NA 2012-10-01        5
+##     3:    NA 2012-10-01       10
+##     4:    NA 2012-10-01       15
+##     5:    NA 2012-10-01       20
+##    ---                          
+## 17564:    NA 2012-11-30     2335
+## 17565:    NA 2012-11-30     2340
+## 17566:    NA 2012-11-30     2345
+## 17567:    NA 2012-11-30     2350
+## 17568:    NA 2012-11-30     2355
+```
+
+
+
+### What is mean total number of steps taken per day?
+
+For this part of the assignment, you can ignore the missing values in
+the dataset.
+
+1. Make a histogram of the total number of steps taken each day
+
+2. Calculate and report the **mean** and **median** total number of steps taken per day
+
+Aggregate the number of steps taken each day.
+Days with missing values (`NA`) will have `NA` when aggregated.
+
+
+```r
+dailyData <- data1[, list(totalSteps = sum(steps)), date]
+head(dailyData)
+```
+
+```
+##          date totalSteps
+## 1: 2012-10-01         NA
+## 2: 2012-10-02        126
+## 3: 2012-10-03      11352
+## 4: 2012-10-04      12116
+## 5: 2012-10-05      13294
+## 6: 2012-10-06      15420
+```
+
+
+Histogram of the total steps taken per day.
+
+
+```r
+ggplot(dailyData, aes(x = totalSteps)) + geom_histogram(alpha = 1/2, binwidth = 1000)
+```
+
+![plot of chunk histTotalStepsTakenPerDay](figure/histTotalStepsTakenPerDay.png) 
+
+
+Calculate the mean and median total number of steps taken per day.
+
+
+```r
+meanMedian <- dailyData[, list(n = .N, nValid = sum(!is.na(totalSteps)), mean = mean(totalSteps, 
+    na.rm = TRUE), median = median(totalSteps, na.rm = TRUE))]
+print(xtable(meanMedian), type = "html", include.rownames = FALSE)
+```
+
+<!-- html table generated in R 3.0.3 by xtable 1.7-3 package -->
+<!-- Sun Jul 20 18:38:23 2014 -->
+<TABLE border=1>
+<TR> <TH> n </TH> <TH> nValid </TH> <TH> mean </TH> <TH> median </TH>  </TR>
+  <TR> <TD align="right">  61 </TD> <TD align="right">  53 </TD> <TD align="right"> 10766.19 </TD> <TD align="right"> 10765 </TD> </TR>
+   </TABLE>
+
+
+
+
+```r
+dailyData <- dailyData[, `:=`(status, "Daily data before imputation")]
+dailyDataBeforeImputation <- dailyData
+```
+
+
+
+### What is the average daily activity pattern?
+
+1. Make a time series plot (i.e. `type = "l"`) of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
+
+2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
+
+Aggregate the average number of steps taken by 5-minute interval.
+
+
+```r
+avg5Interval <- data1[, list(mSteps = mean(steps, na.rm = TRUE)), interval]
+```
+
+
+Plot a time series of the 5-minute interval and the average number of steps taken across all days.
+
+
+```r
+ggplot(avg5Interval, aes(x = interval, y = meanSteps)) + geom_line()
+```
+
+```
+## Error: object 'meanSteps' not found
+```
+
+
+
+### Imputing missing values
+
+Note that there are a number of days/intervals where there are missing
+values (coded as `NA`). The presence of missing days may introduce
+bias into some calculations or summaries of the data.
+
+1. Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with `NA`s)
+
+2. Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
+
+3. Create a new dataset that is equal to the original dataset but with the missing data filled in.
+
+4. Make a histogram of the total number of steps taken each day and Calculate and report the **mean** and **median** total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
+
+Total number of missing values.
+
+
+```r
+data1 <- data1[, `:=`(stepsMissing, is.na(steps))]
+nMissingSteps <- data1[, .N, stepsMissing]
+print(xtable(nMissingSteps), type = "html", include.rownames = FALSE)
+```
+
+<!-- html table generated in R 3.0.3 by xtable 1.7-3 package -->
+<!-- Sun Jul 20 18:38:23 2014 -->
+<TABLE border=1>
+<TR> <TH> stepsMissing </TH> <TH> N </TH>  </TR>
+  <TR> <TD> TRUE </TD> <TD align="right"> 2304 </TD> </TR>
+  <TR> <TD> FALSE </TD> <TD align="right"> 15264 </TD> </TR>
+   </TABLE>
+
+
+
+```r
+x1 <- data1[, .N, list(isMissing = is.na(steps))]
+print(xtable(x1), type = "html", include.rownames = FALSE)
+```
+
+<!-- html table generated in R 3.0.3 by xtable 1.7-3 package -->
+<!-- Sun Jul 20 18:38:23 2014 -->
+<TABLE border=1>
+<TR> <TH> isMissing </TH> <TH> N </TH>  </TR>
+  <TR> <TD> TRUE </TD> <TD align="right"> 2304 </TD> </TR>
+  <TR> <TD> FALSE </TD> <TD align="right"> 15264 </TD> </TR>
+   </TABLE>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
